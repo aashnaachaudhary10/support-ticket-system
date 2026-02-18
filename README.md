@@ -1,6 +1,6 @@
 # Support Ticket System with AI Integration
 
-![Project Banner](https://via.placeholder.com/900x200.png?text=Support+Ticket+System)  
+
 
 ## Overview
 A modern full-stack Support Ticket System built with **React**, **Django REST Framework**, and **PostgreSQL**. The system integrates an **AI (LLM)** to automatically suggest ticket **category** and **priority** based on the ticket description. Users can review and override these suggestions before submission.  
