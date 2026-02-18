@@ -1,16 +1,19 @@
 import os
-from openai import OpenAI
+import json
+import google.generativeai as genai
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 def classify_ticket(description):
     prompt = f"""
     You are a support ticket classifier.
 
-    Based on the following description, return:
-    - category: billing, technical, account, or general
-    - priority: low, medium, high, or critical
+    Choose:
+    - category: billing, technical, account, general
+    - priority: low, medium, high, critical
 
     Return ONLY valid JSON like:
     {{
@@ -23,14 +26,9 @@ def classify_ticket(description):
     """
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-        )
+        response = model.generate_content(prompt)
+        content = response.text.strip()
 
-        content = response.choices[0].message.content
-
-        import json
         result = json.loads(content)
 
         return {
@@ -39,7 +37,6 @@ def classify_ticket(description):
         }
 
     except Exception:
-        # graceful fallback
         return {
             "suggested_category": "general",
             "suggested_priority": "medium",
