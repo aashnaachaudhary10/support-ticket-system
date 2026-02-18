@@ -1,3 +1,5 @@
+from .llm import classify_ticket
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,6 +20,20 @@ class TicketViewSet(viewsets.ModelViewSet):
     filterset_fields = ["category", "priority", "status"]
     search_fields = ["title", "description"]
     ordering = ["-created_at"]
+    
+    @action(detail=False, methods=["post"], url_path="classify")
+    def classify(self, request):
+        description = request.data.get("description")
+
+        if not description:
+            return Response(
+                {"error": "Description is required"},
+                status=400
+            )
+
+        result = classify_ticket(description)
+        return Response(result)
+
 
     @action(detail=False, methods=["get"], url_path="stats")
     def stats(self, request):
