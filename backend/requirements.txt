@@ -3,4 +3,4 @@ djangorestframework
 psycopg2-binary
 django-filter
 google-generativeai
-
+django-cors-headers

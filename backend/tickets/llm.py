@@ -1,33 +1,38 @@
 import os
 import json
+import re
 import google.generativeai as genai
 
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 def classify_ticket(description):
     prompt = f"""
-    You are a support ticket classifier.
+You are a support ticket classifier.
 
-    Choose:
-    - category: billing, technical, account, general
-    - priority: low, medium, high, critical
+Classify the ticket into:
 
-    Return ONLY valid JSON like:
-    {{
-        "category": "...",
-        "priority": "..."
-    }}
+Categories: billing, technical, account, general
+Priorities: low, medium, high, critical
 
-    Description:
-    {description}
-    """
+IMPORTANT:
+Return ONLY valid JSON.
+Do NOT add explanation.
+Do NOT use markdown.
+Example format:
+{{"category": "billing", "priority": "high"}}
+
+Ticket Description:
+{description}
+"""
 
     try:
         response = model.generate_content(prompt)
         content = response.text.strip()
+
+        # Remove markdown if Gemini adds it
+        content = re.sub(r"```json|```", "", content).strip()
 
         result = json.loads(content)
 
@@ -36,7 +41,8 @@ def classify_ticket(description):
             "suggested_priority": result.get("priority", "medium"),
         }
 
-    except Exception:
+    except Exception as e:
+        print("LLM ERROR:", e)  # see error in docker logs
         return {
             "suggested_category": "general",
             "suggested_priority": "medium",
